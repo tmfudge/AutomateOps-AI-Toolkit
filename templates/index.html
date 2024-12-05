@@ -1,9 +1,76 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row">
+<ul class="nav nav-tabs mb-4" id="toolTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="property-tab" data-bs-toggle="tab" data-bs-target="#property" type="button" role="tab">Property Name Generator</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="utm-tab" data-bs-toggle="tab" data-bs-target="#utm" type="button" role="tab">UTM URL Builder</button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- Property Name Generator -->
+    <div class="tab-pane fade show active" id="property" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                Property Name Generator
+            </div>
+            <div class="card-body">
+                <form id="property-form">
+                    <div class="mb-3">
+                        <label for="event_date" class="form-label">Event Date</label>
+                        <input type="date" class="form-control" name="event_date" id="event_date" required>
+                        <div class="form-text">This is the date of the event, not today's date</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Campaign Name / Description</label>
+                        <input type="text" class="form-control" name="description" id="description" required
+                               placeholder="e.g., Holiday-Jingle-Mingle">
+                        <div class="form-text">Words will be separated by hyphens automatically. This should match your Campaign Name from UTM builder.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Asset/Property Type (Select one or more)</label>
+                        <div class="row g-3">
+                            {% for code, name in property_types.items() %}
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="property_types[]" 
+                                           value="{{ code }}" id="type_{{ code }}">
+                                    <label class="form-check-label" for="type_{{ code }}">
+                                        {{ code }} - {{ name }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="partner" class="form-label">Partner/Sponsor Name (Optional)</label>
+                        <input type="text" class="form-control" name="partner" id="partner">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Generate Property Name</button>
+                </form>
+                
+                <div id="property-error" class="error-message"></div>
+                
+                <div id="property-result" class="result-box" style="display: none;">
+                    <h6>Generated Property Name:</h6>
+                    <div id="property-names-list">
+                        <!-- Property names will be inserted here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- UTM Builder -->
-    <div class="col-md-6">
+    <div class="tab-pane fade" id="utm" role="tabpanel">
         <div class="card">
             <div class="card-header">
                 UTM URL Builder

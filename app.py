@@ -87,8 +87,8 @@ def generate_property_name():
     if not all([data['description']]):
         return jsonify({'error': 'Description is required'}), 400
     
-    # Format the date
-    today = datetime.now().strftime('%Y%m%d')
+    # Get and format the event date
+    event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').strftime('%Y%m%d')
     
     # Format description (replace spaces with hyphens)
     description = '-'.join(data['description'].split())
@@ -105,7 +105,7 @@ def generate_property_name():
             continue
             
         # Build the parts of the name
-        parts = [today, prop_type]
+        parts = [event_date, prop_type]
         if partner:
             parts.append(partner)
         parts.append(description)
