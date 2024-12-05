@@ -107,9 +107,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('property-error').style.display = 'block';
                 document.getElementById('property-result').style.display = 'none';
             } else {
-                document.getElementById('property-name').textContent = data.property_name;
+                const propertyNamesList = document.getElementById('property-names-list');
+                propertyNamesList.innerHTML = '';
+                
+                data.property_names.forEach(name => {
+                    const div = document.createElement('div');
+                    div.className = 'd-flex align-items-center mb-2';
+                    div.innerHTML = `
+                        <span class="text-break me-2">${name}</span>
+                        <button class="btn btn-sm btn-outline-primary copy-btn">Copy</button>
+                    `;
+                    propertyNamesList.appendChild(div);
+                });
+                
                 document.getElementById('property-result').style.display = 'block';
                 document.getElementById('property-error').style.display = 'none';
+                
+                // Reinitialize copy buttons
+                document.querySelectorAll('#property-names-list .copy-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const textToCopy = this.previousElementSibling.textContent;
+                        navigator.clipboard.writeText(textToCopy).then(() => {
+                            const originalText = this.textContent;
+                            this.textContent = 'Copied!';
+                            setTimeout(() => {
+                                this.textContent = originalText;
+                            }, 2000);
+                        });
+                    });
+                });
             }
         });
     });

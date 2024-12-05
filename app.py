@@ -17,7 +17,16 @@ MEDIUM_OPTIONS = {
     'partner': ['custom']  # Partner will use a text input field
 }
 
-REGION_OPTIONS = ['NA', 'EU', 'APAC']
+PROPERTY_TYPES = {
+    'LP': 'Landing Page',
+    'EM': 'Email',
+    'FR': 'Form',
+    'LIS': 'List',
+    'NL': 'Newsletter',
+    'TD': 'Tradeshow',
+    'WB': 'Webinar',
+    'WF': 'Workflow'
+}
 
 def validate_url(url):
     try:
@@ -36,8 +45,8 @@ def validate_date(date_str):
 @app.route('/')
 def index():
     return render_template('index.html', 
-                         medium_options=MEDIUM_OPTIONS, 
-                         region_options=REGION_OPTIONS)
+                         medium_options=MEDIUM_OPTIONS,
+                         property_types=PROPERTY_TYPES)
 
 @app.route('/build-utm', methods=['POST'])
 def build_utm():
@@ -69,20 +78,43 @@ def build_utm():
 def generate_property_name():
     data = request.form
     
+    # Get the list of selected property types
+    property_types = request.form.getlist('property_types[]')
+    
     # Validate inputs
-    if not all([data['campaign_name'], data['date'], data['region']]):
-        return jsonify({'error': 'All fields are required'}), 400
+    if not property_types:
+        return jsonify({'error': 'At least one property type must be selected'}), 400
+        
+    if not all([data['description']]):
+        return jsonify({'error': 'Description is required'}), 400
     
-    if not validate_date(data['date']):
-        return jsonify({'error': 'Invalid date format'}), 400
+    # Format the date
+    today = datetime.now().strftime('%Y%m%d')
     
-    if data['region'] not in REGION_OPTIONS:
-        return jsonify({'error': 'Invalid region'}), 400
+    # Format description (replace spaces with hyphens)
+    description = '-'.join(data['description'].split())
     
-    # Generate property name
-    property_name = f"{data['region']}-{data['campaign_name']}-{data['date'].replace('-', '')}"
+    # Format partner name if provided
+    partner = data.get('partner', '').strip()
+    if partner:
+        partner = '-'.join(partner.split())
     
-    return jsonify({'property_name': property_name})
+    # Generate property names for each selected type
+    property_names = []
+    for prop_type in property_types:
+        if prop_type not in PROPERTY_TYPES:
+            continue
+            
+        # Build the parts of the name
+        parts = [today, prop_type]
+        if partner:
+            parts.append(partner)
+        parts.append(description)
+        
+        # Join with " | " separator
+        property_names.append(' | '.join(parts))
+    
+    return jsonify({'property_names': property_names})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

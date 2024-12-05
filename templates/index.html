@@ -79,23 +79,32 @@
             <div class="card-body">
                 <form id="property-form">
                     <div class="mb-3">
-                        <label for="campaign_name" class="form-label">Campaign Name</label>
-                        <input type="text" class="form-control" name="campaign_name" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="date" class="form-label">Date</label>
-                        <input type="date" class="form-control" name="date" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="region" class="form-label">Region</label>
-                        <select class="form-select" name="region" required>
-                            <option value="">Select Region</option>
-                            {% for region in region_options %}
-                            <option value="{{ region }}">{{ region }}</option>
+                        <label class="form-label">Asset/Property Type (Select one or more)</label>
+                        <div class="row g-3">
+                            {% for code, name in property_types.items() %}
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="property_types[]" 
+                                           value="{{ code }}" id="type_{{ code }}">
+                                    <label class="form-check-label" for="type_{{ code }}">
+                                        {{ code }} - {{ name }}
+                                    </label>
+                                </div>
+                            </div>
                             {% endfor %}
-                        </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="partner" class="form-label">Partner/Sponsor Name (Optional)</label>
+                        <input type="text" class="form-control" name="partner" id="partner">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" class="form-control" name="description" id="description" required
+                               placeholder="e.g., Holiday-Jingle-Mingle">
+                        <div class="form-text">Words will be separated by hyphens automatically</div>
                     </div>
                     
                     <button type="submit" class="btn btn-primary">Generate Property Name</button>
@@ -105,9 +114,8 @@
                 
                 <div id="property-result" class="result-box" style="display: none;">
                     <h6>Generated Property Name:</h6>
-                    <div class="d-flex align-items-center">
-                        <span id="property-name"></span>
-                        <button class="btn btn-sm btn-outline-primary copy-btn">Copy</button>
+                    <div id="property-names-list">
+                        <!-- Property names will be inserted here by JavaScript -->
                     </div>
                 </div>
             </div>
