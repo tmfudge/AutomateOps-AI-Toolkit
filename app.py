@@ -115,5 +115,21 @@ def generate_property_name():
     
     return jsonify({'property_names': property_names})
 
+@app.route('/embed-code')
+def embed_code():
+    """Generate a standalone HTML version of the tools"""
+    # Get the CSS content
+    with open('static/css/style.css', 'r') as f:
+        css_content = f.read()
+    
+    # Get the JavaScript content
+    with open('static/js/main.js', 'r') as f:
+        js_content = f.read()
+    
+    return render_template('embed.html',
+                         css_content=css_content,
+                         js_content=js_content,
+                         medium_options=MEDIUM_OPTIONS,
+                         property_types=PROPERTY_TYPES)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
