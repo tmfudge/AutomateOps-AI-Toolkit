@@ -115,6 +115,12 @@ def generate_property_name():
     
     return jsonify({'property_names': property_names})
 
+@app.route('/admin/embed')
+def admin_embed():
+    """Admin-only page for embed codes"""
+    return render_template('admin/embed.html',
+                         base_url=request.url_root)
+
 @app.route('/embed-code')
 def embed_code():
     """Generate a standalone HTML version of the tools"""
