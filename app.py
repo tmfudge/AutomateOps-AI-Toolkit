@@ -56,15 +56,14 @@ def build_utm():
     if not validate_url(data['base_url']):
         return jsonify({'error': 'Invalid URL format'}), 400
     
-    if not all([data['campaign_name'], data['medium'], data['source'], data['content']]):
+    if not all([data['campaign_name'], data['medium'], data['source']]):
         return jsonify({'error': 'All fields are required'}), 400
 
     # Build UTM parameters
     utm_params = {
         'utm_campaign': data['campaign_name'],
         'utm_medium': data['medium'],
-        'utm_source': data['source'],
-        'utm_content': data['content']
+        'utm_source': data['source']
     }
     
     # Construct final URL
