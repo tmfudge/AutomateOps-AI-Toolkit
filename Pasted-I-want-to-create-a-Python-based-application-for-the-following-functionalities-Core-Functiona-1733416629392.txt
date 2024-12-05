@@ -1,0 +1,69 @@
+I want to create a Python-based application for the following functionalities:
+
+### **Core Functionalities**
+1. **UTM Builder**:
+   - Generates a URL with UTM parameters.
+   - The form should take the following inputs:
+     - **Base URL**: A valid URL (e.g., https://example.com).
+     - **Campaign Name**: A descriptive name for the campaign.
+     - **Medium**: Dropdown with options like `email`, `social`, `paid_search`.
+     - **Source**: Dependent on the selected Medium:
+       - For `email`: Options = `newsletter`, `promo_email`.
+       - For `social`: Options = `Facebook`, `Instagram`, `LinkedIn`.
+       - For `paid_search`: Options = `GoogleAds`, `BingAds`.
+     - **Content**: A descriptive content type (e.g., `banner`, `CTA`).
+   - Output: A formatted URL with appended UTM parameters.
+
+2. **Property Name Generator**:
+   - Generates standardized property names based on:
+     - **Campaign Name**: User input.
+     - **Date**: A date in `YYYY-MM-DD` format.
+     - **Region**: Dropdown with options like `NA`, `EU`, `APAC`.
+   - Output: A string in the format:
+     ```
+     region-campaignName-date
+     ```
+
+### **Technical Requirements**
+1. Use **Python** and **Flask** for the backend.
+2. Build a web form interface for the inputs using Flask's templating system and Bootstrap for styling.
+3. Validate inputs:
+   - Ensure Base URL is a valid URL.
+   - Ensure Date matches `YYYY-MM-DD` format.
+   - Ensure Medium and Source values match predefined options.
+4. Display results dynamically on submission.
+5. Include error messages for invalid inputs.
+
+### **Branding Guidelines**
+1. Add a header with the branding:
+   - Title: "AutomateOps.ai"
+   - Tagline: "Streamlining Campaign Management with AI"
+2. Style the web form:
+   - Background color: Light gray (`#F5F5F5`).
+   - Buttons: Blue (`#007BFF`).
+   - Text color: Dark gray (`#333333`).
+   - Font: Use "Roboto" or similar sans-serif font.
+
+### **Documentation**
+1. Generate a `README.md` file that includes:
+   - **Introduction**: Overview of the project.
+   - **Features**: Description of the UTM Builder and Property Name Generator.
+   - **Installation**: Instructions to run the application in Replit or locally.
+     - Include commands like `pip install flask` if needed.
+   - **Usage Instructions**: Steps to use the application.
+   - **Example Outputs**:
+     - UTM URL Example:
+       ```
+       https://example.com?utm_campaign=holiday_sale&utm_medium=email&utm_source=newsletter&utm_content=banner
+       ```
+     - Property Name Example:
+       ```
+       NA-holiday_sale-20241205
+       ```
+   - **Contribution**: Guidelines for contributing to the project.
+   - **License**: A placeholder for an MIT License.
+
+### **Output Requirements**
+1. Write the application code in a single Python file (`app.py`).
+2. Write the Markdown documentation and save it as `README.md`.
+3. Provide clear instructions on how to run the application and test it.
