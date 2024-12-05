@@ -15,10 +15,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <button class="btn btn-sm btn-outline-primary theme-switch" onclick="toggleTheme()">
-        <span class="light-icon">🌙</span>
-        <span class="dark-icon" style="display: none">☀️</span>
-    </button>
+    <div class="position-fixed top-0 end-0 p-3 d-flex gap-2">
+        <a href="{{ url_for('admin_embed') }}" class="btn btn-sm btn-outline-primary">Embed Code</a>
+        <button class="btn btn-sm btn-outline-primary theme-switch" onclick="toggleTheme()">
+            <span class="light-icon">🌙</span>
+            <span class="dark-icon" style="display: none">☀️</span>
+        </button>
+    </div>
 
     <header class="header text-center">
         <img src="{{ url_for('static', filename='assets/logo-static.png') }}" alt="AutomateOps.ai Logo" class="logo">
