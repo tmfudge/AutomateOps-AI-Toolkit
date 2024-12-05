@@ -7,9 +7,14 @@ app = Flask(__name__)
 
 # Configuration for dropdown options
 MEDIUM_OPTIONS = {
-    'email': ['newsletter', 'promo_email'],
-    'social': ['Facebook', 'Instagram', 'LinkedIn'],
-    'paid_search': ['GoogleAds', 'BingAds']
+    'email': ['hs-email', 'newsletter'],
+    'social': ['linkedin', 'X'],
+    'community': ['slack', 'chapter'],
+    'events': ['accelevents', 'zoom'],
+    'blog': ['blog'],
+    'podcast': ['opscast'],
+    'website': ['website'],
+    'partner': ['custom']  # Partner will use a text input field
 }
 
 REGION_OPTIONS = ['NA', 'EU', 'APAC']

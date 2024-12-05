@@ -13,7 +13,10 @@
                     <div class="mb-3">
                         <label for="base_url" class="form-label">Base URL</label>
                         <input type="url" class="form-control" id="base_url" name="base_url" required
-                               placeholder="https://example.com">
+                               placeholder="https://example.com"
+                               pattern="https://.*"
+                               title="Please start with https://">
+                        <div class="form-text">URL must start with https://</div>
                     </div>
                     
                     <div class="mb-3">
@@ -27,15 +30,22 @@
                             <option value="">Select Medium</option>
                             <option value="email">Email</option>
                             <option value="social">Social</option>
-                            <option value="paid_search">Paid Search</option>
+                            <option value="community">Community</option>
+                            <option value="events">Events</option>
+                            <option value="blog">Blog</option>
+                            <option value="podcast">Podcast</option>
+                            <option value="website">Website</option>
+                            <option value="partner">Partner</option>
                         </select>
                     </div>
                     
-                    <div class="mb-3">
+                    <div class="mb-3" id="source-input-group">
                         <label for="source" class="form-label">Source</label>
                         <select class="form-select" id="source" name="source" required disabled>
                             <option value="">Select Source</option>
                         </select>
+                        <input type="text" class="form-control mt-2" id="source-custom" name="source_custom" 
+                               placeholder="Enter custom source" style="display: none;">
                     </div>
                     
                     <div class="mb-3">

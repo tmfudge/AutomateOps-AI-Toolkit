@@ -4,25 +4,65 @@ document.addEventListener('DOMContentLoaded', function() {
     const sourceSelect = document.getElementById('source');
     
     const sourceOptions = {
-        'email': ['newsletter', 'promo_email'],
-        'social': ['Facebook', 'Instagram', 'LinkedIn'],
-        'paid_search': ['GoogleAds', 'BingAds']
+        'email': ['hs-email', 'newsletter'],
+        'social': ['linkedin', 'X'],
+        'community': ['slack', 'chapter'],
+        'events': ['accelevents', 'zoom'],
+        'blog': ['blog'],
+        'podcast': ['opscast'],
+        'website': ['website'],
+        'partner': ['custom']
     };
+    
+    const sourceInputGroup = document.getElementById('source-input-group');
+    const sourceCustomInput = document.getElementById('source-custom');
     
     mediumSelect.addEventListener('change', function() {
         const medium = this.value;
         sourceSelect.innerHTML = '';
         
         if (medium) {
+            // Add the default options
             sourceOptions[medium].forEach(option => {
                 const optionElement = document.createElement('option');
                 optionElement.value = option;
                 optionElement.textContent = option;
                 sourceSelect.appendChild(optionElement);
             });
+            
+            // Add "Other" option
+            const otherOption = document.createElement('option');
+            otherOption.value = 'other';
+            otherOption.textContent = 'Other';
+            sourceSelect.appendChild(otherOption);
+            
             sourceSelect.disabled = false;
+            
+            // Show/hide custom input based on medium
+            if (medium === 'partner') {
+                sourceCustomInput.style.display = 'block';
+                sourceSelect.style.display = 'none';
+                sourceCustomInput.required = true;
+                sourceSelect.required = false;
+            } else {
+                sourceCustomInput.style.display = 'none';
+                sourceSelect.style.display = 'block';
+                sourceCustomInput.required = false;
+                sourceSelect.required = true;
+            }
         } else {
             sourceSelect.disabled = true;
+            sourceCustomInput.style.display = 'none';
+        }
+    });
+    
+    sourceSelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            sourceCustomInput.style.display = 'block';
+            sourceCustomInput.required = true;
+        } else {
+            sourceCustomInput.style.display = 'none';
+            sourceCustomInput.required = false;
         }
     });
     
