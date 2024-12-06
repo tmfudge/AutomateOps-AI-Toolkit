@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify
 from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
-import pyshorteners
 import re
 from datetime import datetime
 
@@ -72,22 +71,7 @@ def build_utm():
     utm_string = urlencode(utm_params)
     final_url = f"{base_url}?{utm_string}"
     
-    # Shorten URL if requested
-    shorten = request.form.get('shorten', 'false') == 'true'
-    if shorten:
-        try:
-            s = pyshorteners.Shortener()
-            shortened_url = s.tinyurl.short(final_url)
-            return jsonify({
-                'url': final_url,
-                'shortened_url': shortened_url
-            })
-        except Exception as e:
-            app.logger.error(f"Error shortening URL: {str(e)}")
-            return jsonify({
-                'url': final_url,
-                'error': 'Failed to generate shortened URL'
-            })
+    
     
     return jsonify({'url': final_url})
 

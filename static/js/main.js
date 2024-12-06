@@ -72,8 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const formData = new FormData(this);
         
-        const shortenUrl = document.getElementById('shorten_url').checked;
-        formData.append('shorten', shortenUrl);
+        
         
         fetch('/build-utm', {
             method: 'POST',
