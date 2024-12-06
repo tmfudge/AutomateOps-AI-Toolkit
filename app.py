@@ -18,18 +18,14 @@ MEDIUM_OPTIONS = {
 }
 
 PROPERTY_TYPES = {
-    'EMC': 'Email Campaign',
-    'SMP': 'Social Media Post',
-    'SMA': 'Social Media Ad',
-    'LPA': 'Landing Page',
-    'WBN': 'Webinar',
-    'EVT': 'Event',
-    'BLG': 'Blog Post',
-    'POD': 'Podcast',
-    'VID': 'Video',
-    'EBK': 'Ebook',
-    'WHP': 'Whitepaper',
-    'NLT': 'Newsletter'
+    'LP': 'Landing Page',
+    'EM': 'Email',
+    'FR': 'Form',
+    'LIS': 'List',
+    'NL': 'Newsletter',
+    'TD': 'Tradeshow',
+    'WB': 'Webinar',
+    'WF': 'Workflow'
 }
 
 @app.route('/')
