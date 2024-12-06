@@ -124,33 +124,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('property-error').style.display = 'none';
                 
                 // Reinitialize copy buttons
-                document.querySelectorAll('#property-names-list .copy-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const textToCopy = this.previousElementSibling.textContent;
-                        navigator.clipboard.writeText(textToCopy).then(() => {
-                            const originalText = this.textContent;
-                            this.textContent = 'Copied!';
-                            setTimeout(() => {
-                                this.textContent = originalText;
-                            }, 2000);
-                        });
-                    });
-                });
+                initializeCopyButtons();
             }
         });
     });
     
     // Copy to clipboard functionality
-    document.querySelectorAll('.copy-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const textToCopy = this.previousElementSibling.textContent;
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const originalText = this.textContent;
-                this.textContent = 'Copied!';
-                setTimeout(() => {
-                    this.textContent = originalText;
-                }, 2000);
+    function initializeCopyButtons() {
+        document.querySelectorAll('.copy-btn').forEach(button => {
+            button.addEventListener('click', async function() {
+                const textToCopy = this.previousElementSibling.textContent;
+                try {
+                    await navigator.clipboard.writeText(textToCopy);
+                    const originalText = this.textContent;
+                    this.textContent = 'Copied!';
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    // Fallback for older browsers
+                    const textarea = document.createElement('textarea');
+                    textarea.value = textToCopy;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    const originalText = this.textContent;
+                    this.textContent = 'Copied!';
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                    }, 2000);
+                }
             });
         });
-    });
+    }
+
+    // Initialize copy buttons on page load
+    initializeCopyButtons();
 });
