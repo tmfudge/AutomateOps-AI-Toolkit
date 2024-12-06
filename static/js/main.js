@@ -72,6 +72,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const formData = new FormData(this);
         
+        const shortenUrl = document.getElementById('shorten_url').checked;
+        formData.append('shorten', shortenUrl);
+        
         fetch('/build-utm', {
             method: 'POST',
             body: formData
@@ -83,9 +86,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('utm-error').style.display = 'block';
                 document.getElementById('utm-result').style.display = 'none';
             } else {
-                document.getElementById('utm-url').textContent = data.url;
+                let resultHtml = `
+                    <div class="mb-3">
+                        <strong>Full URL:</strong>
+                        <div class="d-flex align-items-center">
+                            <span class="text-break me-2">${data.url}</span>
+                            <button class="btn btn-sm btn-outline-primary copy-btn">Copy</button>
+                        </div>
+                    </div>`;
+
+                if (data.shortened_url) {
+                    resultHtml += `
+                    <div>
+                        <strong>Shortened URL:</strong>
+                        <div class="d-flex align-items-center">
+                            <span class="text-break me-2">${data.shortened_url}</span>
+                            <button class="btn btn-sm btn-outline-primary copy-btn">Copy</button>
+                        </div>
+                    </div>`;
+                }
+
+                document.getElementById('utm-url').innerHTML = resultHtml;
                 document.getElementById('utm-result').style.display = 'block';
                 document.getElementById('utm-error').style.display = 'none';
+                initializeCopyButtons();
             }
         });
     });
