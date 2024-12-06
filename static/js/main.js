@@ -86,24 +86,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('utm-result').style.display = 'none';
             } else {
                 let resultHtml = `
-                    <div class="mb-3">
-                        <strong>Full URL:</strong>
-                        <div class="d-flex align-items-center">
-                            <span class="text-break me-2">${data.url}</span>
-                            <button class="btn btn-sm btn-outline-primary copy-btn">Copy</button>
-                        </div>
+                    <div class="d-flex align-items-center">
+                        <input type="text" class="form-control me-2" value="${data.url}" readonly>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyUrlToClipboard(this)">Copy</button>
                     </div>`;
-
-                if (data.shortened_url) {
-                    resultHtml += `
-                    <div>
-                        <strong>Shortened URL:</strong>
-                        <div class="d-flex align-items-center">
-                            <span class="text-break me-2">${data.shortened_url}</span>
-                            <button class="btn btn-sm btn-outline-primary copy-btn">Copy</button>
-                        </div>
-                    </div>`;
-                }
 
                 document.getElementById('utm-url').innerHTML = resultHtml;
                 document.getElementById('utm-result').style.display = 'block';
@@ -167,6 +153,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 } catch (err) {
                     console.error('Failed to copy text: ', err);
                     // Fallback for older browsers
+    function copyUrlToClipboard(button) {
+        const urlInput = button.previousElementSibling;
+        urlInput.select();
+        navigator.clipboard.writeText(urlInput.value).then(() => {
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 2000);
+        });
+    }
+
                     const textarea = document.createElement('textarea');
                     textarea.value = textToCopy;
                     document.body.appendChild(textarea);
