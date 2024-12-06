@@ -145,10 +145,10 @@ def embed_code():
                          medium_options=MEDIUM_OPTIONS,
                          property_types=PROPERTY_TYPES)
 
-@app.route('/standalone-utm')
-def standalone_utm():
-    """Serve the standalone UTM builder HTML"""
-    return render_template('standalone_utm.html')
+@app.route('/')
+def index():
+    """Serve the standalone HTML"""
+    return render_template('standalone.html')
 
 if __name__ == '__main__':
     # Configure logging
