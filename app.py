@@ -1,26 +1,9 @@
 from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
 import re
 from datetime import datetime
-import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-class URLHistory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    base_url = db.Column(db.String(500), nullable=False)
-    campaign_name = db.Column(db.String(100), nullable=False)
-    medium = db.Column(db.String(50), nullable=False)
-    source = db.Column(db.String(50), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    final_url = db.Column(db.String(1000), nullable=False)
-
-with app.app_context():
-    db.create_all()
 
 # Configuration for dropdown options
 MEDIUM_OPTIONS = {
@@ -31,105 +14,92 @@ MEDIUM_OPTIONS = {
     'blog': ['blog'],
     'podcast': ['opscast'],
     'website': ['website'],
-    'partner': ['custom']  # Partner will use a text input field
+    'partner': ['custom']
 }
 
 PROPERTY_TYPES = {
-    'LP': 'Landing Page',
-    'EM': 'Email',
-    'FR': 'Form',
-    'LIS': 'List',
-    'NL': 'Newsletter',
-    'TD': 'Tradeshow',
-    'WB': 'Webinar',
-    'WF': 'Workflow'
+    'EMC': 'Email Campaign',
+    'SMP': 'Social Media Post',
+    'SMA': 'Social Media Ad',
+    'LPA': 'Landing Page',
+    'WBN': 'Webinar',
+    'EVT': 'Event',
+    'BLG': 'Blog Post',
+    'POD': 'Podcast',
+    'VID': 'Video',
+    'EBK': 'Ebook',
+    'WHP': 'Whitepaper',
+    'NLT': 'Newsletter'
 }
-
-def validate_url(url):
-    try:
-        result = urlparse(url)
-        return all([result.scheme, result.netloc])
-    except:
-        return False
-
-def validate_date(date_str):
-    try:
-        datetime.strptime(date_str, '%Y-%m-%d')
-        return True
-    except ValueError:
-        return False
 
 @app.route('/')
 def index():
-    return render_template('index.html', 
+    """Render the main page with both tools"""
+    return render_template('index.html',
                          medium_options=MEDIUM_OPTIONS,
                          property_types=PROPERTY_TYPES)
 
 @app.route('/build-utm', methods=['POST'])
 def build_utm():
+    """Generate a UTM-tagged URL"""
     data = request.form
     
-    # Validate inputs
-    if not validate_url(data['base_url']):
-        return jsonify({'error': 'Invalid URL format'}), 400
+    # Basic validation
+    if not data.get('base_url'):
+        return jsonify({'error': 'Base URL is required'}), 400
+        
+    if not data.get('campaign_name'):
+        return jsonify({'error': 'Campaign Name is required'}), 400
+        
+    if not data.get('medium'):
+        return jsonify({'error': 'Medium is required'}), 400
+        
+    if not data.get('source'):
+        return jsonify({'error': 'Source is required'}), 400
     
-    if not all([data['campaign_name'], data['medium'], data['source']]):
-        return jsonify({'error': 'All fields are required'}), 400
-
+    # Parse the base URL
+    parsed_url = urlparse(data['base_url'])
+    base_url = urlunparse((
+        parsed_url.scheme,
+        parsed_url.netloc,
+        parsed_url.path,
+        parsed_url.params,
+        '',  # Clear existing query parameters
+        ''   # Clear fragments
+    ))
+    
     # Build UTM parameters
     utm_params = {
-        'utm_campaign': data['campaign_name'],
+        'utm_source': data.get('source_custom') if data.get('source') == 'other' else data.get('source'),
         'utm_medium': data['medium'],
-        'utm_source': data['source']
+        'utm_campaign': data['campaign_name'].lower().replace(' ', '-')
     }
     
-    # Construct final URL
-    base_url = data['base_url'].rstrip('/')
+    # Generate the final URL
     utm_string = urlencode(utm_params)
     final_url = f"{base_url}?{utm_string}"
-    
-    # Save to history
-    url_history = URLHistory(
-        base_url=base_url,
-        campaign_name=data['campaign_name'],
-        medium=data['medium'],
-        source=data['source'],
-        final_url=final_url
-    )
-    db.session.add(url_history)
-    db.session.commit()
     
     return jsonify({'url': final_url})
 
 @app.route('/generate-property-name', methods=['POST'])
 def generate_property_name():
+    """Generate standardized property names"""
     data = request.form
     
-    # Get the list of selected property types
-    property_types = request.form.getlist('property_types[]')
-    
-    # Validate inputs
-    if not property_types:
-        return jsonify({'error': 'At least one property type must be selected'}), 400
+    # Basic validation
+    if not data.get('event_date'):
+        return jsonify({'error': 'Event Date is required'}), 400
         
-    if not all([data['description']]):
+    if not data.get('description'):
         return jsonify({'error': 'Description is required'}), 400
+    
+    # Get selected property types
+    property_types = request.form.getlist('property_types[]')
+    if not property_types:
+        return jsonify({'error': 'At least one Property Type must be selected'}), 400
     
     # Get and format the event date
     event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').strftime('%Y%m%d')
-@app.route('/url-history')
-def url_history():
-    history = URLHistory.query.order_by(URLHistory.created_at.desc()).limit(10).all()
-    history_list = [{
-        'base_url': h.base_url,
-        'campaign_name': h.campaign_name,
-        'medium': h.medium,
-        'source': h.source,
-        'created_at': h.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-        'final_url': h.final_url
-    } for h in history]
-    return jsonify({'history': history_list})
-
     
     # Format description (replace spaces with hyphens)
     description = '-'.join(data['description'].split())
@@ -178,6 +148,7 @@ def embed_code():
                          js_content=js_content,
                          medium_options=MEDIUM_OPTIONS,
                          property_types=PROPERTY_TYPES)
+
 if __name__ == '__main__':
     # Configure logging
     import logging
@@ -187,5 +158,5 @@ if __name__ == '__main__':
     app.run(
         host='0.0.0.0',
         port=5000,
-        debug=False  # Disable debug mode for production
+        debug=True  # Enable debug mode for development
     )
