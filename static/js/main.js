@@ -1,186 +1,147 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Dynamic source options based on medium selection
-    const mediumSelect = document.getElementById('medium');
-    const sourceSelect = document.getElementById('source');
-    
-    const sourceOptions = {
-        'email': ['hs-email', 'newsletter'],
-        'social': ['linkedin', 'X'],
-        'community': ['slack', 'chapter'],
-        'events': ['accelevents', 'zoom'],
-        'blog': ['blog'],
-        'podcast': ['opscast'],
-        'website': ['website'],
-        'partner': ['custom']
-    };
-    
-    const sourceInputGroup = document.getElementById('source-input-group');
-    const sourceCustomInput = document.getElementById('source-custom');
-    
-    mediumSelect.addEventListener('change', function() {
-        const medium = this.value;
-        sourceSelect.innerHTML = '';
+    // UTM Builder Form Handler
+    const utmForm = document.getElementById('utm-form');
+    if (utmForm) {
+        const mediumSelect = document.getElementById('medium');
+        const sourceSelect = document.getElementById('source');
+        const sourceCustom = document.getElementById('source-custom');
         
-        if (medium) {
-            // Add the default options
-            sourceOptions[medium].forEach(option => {
-                const optionElement = document.createElement('option');
-                optionElement.value = option;
-                optionElement.textContent = option;
-                sourceSelect.appendChild(optionElement);
-            });
-            
-            // Add "Other" option
-            const otherOption = document.createElement('option');
-            otherOption.value = 'other';
-            otherOption.textContent = 'Other';
-            sourceSelect.appendChild(otherOption);
-            
-            sourceSelect.disabled = false;
-            
-            // Show/hide custom input based on medium
-            if (medium === 'partner') {
-                sourceCustomInput.style.display = 'block';
-                sourceSelect.style.display = 'none';
-                sourceCustomInput.required = true;
-                sourceSelect.required = false;
-            } else {
-                sourceCustomInput.style.display = 'none';
-                sourceSelect.style.display = 'block';
-                sourceCustomInput.required = false;
-                sourceSelect.required = true;
-            }
-        } else {
-            sourceSelect.disabled = true;
-            sourceCustomInput.style.display = 'none';
-        }
-    });
-    
-    sourceSelect.addEventListener('change', function() {
-        if (this.value === 'other') {
-            sourceCustomInput.style.display = 'block';
-            sourceCustomInput.required = true;
-        } else {
-            sourceCustomInput.style.display = 'none';
-            sourceCustomInput.required = false;
-        }
-    });
-    
-    // UTM Builder Form Submission
-    document.getElementById('utm-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        
-        
-        
-        fetch('/build-utm', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                document.getElementById('utm-error').textContent = data.error;
-                document.getElementById('utm-error').style.display = 'block';
-                document.getElementById('utm-result').style.display = 'none';
-            } else {
-                let resultHtml = `
-                    <div class="d-flex align-items-center">
-                        <input type="text" class="form-control me-2" value="${data.url}" readonly>
-                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyUrlToClipboard(this)">Copy</button>
-                    </div>`;
+        // Medium to Source mapping
+        const sourceOptions = {
+            'email': ['hs-email', 'newsletter'],
+            'social': ['linkedin', 'X'],
+            'community': ['slack', 'chapter'],
+            'events': ['accelevents', 'zoom'],
+            'blog': ['blog'],
+            'podcast': ['opscast'],
+            'website': ['website'],
+            'partner': ['custom']
+        };
 
-                document.getElementById('utm-url').innerHTML = resultHtml;
-                document.getElementById('utm-result').style.display = 'block';
-                document.getElementById('utm-error').style.display = 'none';
-                initializeCopyButtons();
-            }
-        });
-    });
-    
-    // Property Name Generator Form Submission
-    document.getElementById('property-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        
-        fetch('/generate-property-name', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                document.getElementById('property-error').textContent = data.error;
-                document.getElementById('property-error').style.display = 'block';
-                document.getElementById('property-result').style.display = 'none';
-            } else {
-                const propertyNamesList = document.getElementById('property-names-list');
-                propertyNamesList.innerHTML = '';
-                
-                data.property_names.forEach(name => {
-                    const div = document.createElement('div');
-                    div.className = 'd-flex align-items-center mb-2';
-                    div.innerHTML = `
-                        <span class="text-break me-2">${name}</span>
-                        <button class="btn btn-sm btn-outline-primary copy-btn">Copy</button>
-                    `;
-                    propertyNamesList.appendChild(div);
+        // Update source options when medium changes
+        mediumSelect.addEventListener('change', function() {
+            const medium = this.value;
+            sourceSelect.innerHTML = '<option value="">Select Source</option>';
+            sourceSelect.disabled = !medium;
+            
+            if (medium) {
+                const sources = sourceOptions[medium] || [];
+                sources.forEach(source => {
+                    const option = document.createElement('option');
+                    option.value = source;
+                    option.textContent = source;
+                    sourceSelect.appendChild(option);
                 });
                 
-                document.getElementById('property-result').style.display = 'block';
-                document.getElementById('property-error').style.display = 'none';
-                
-                // Reinitialize copy buttons
-                initializeCopyButtons();
+                // Add "Other" option
+                const otherOption = document.createElement('option');
+                otherOption.value = 'other';
+                otherOption.textContent = 'Other';
+                sourceSelect.appendChild(otherOption);
+            }
+            
+            // Hide custom source input
+            sourceCustom.style.display = 'none';
+            sourceCustom.value = '';
+        });
+
+        // Show/hide custom source input
+        sourceSelect.addEventListener('change', function() {
+            sourceCustom.style.display = this.value === 'other' ? 'block' : 'none';
+            if (this.value !== 'other') {
+                sourceCustom.value = '';
             }
         });
-    });
-    
-    // Copy to clipboard functionality
-    function initializeCopyButtons() {
-        document.querySelectorAll('.copy-btn').forEach(button => {
-            button.addEventListener('click', async function() {
-                const textToCopy = this.previousElementSibling.textContent;
-                try {
-                    await navigator.clipboard.writeText(textToCopy);
-                    const originalText = this.textContent;
-                    this.textContent = 'Copied!';
-                    setTimeout(() => {
-                        this.textContent = originalText;
-                    }, 2000);
-                } catch (err) {
-                    console.error('Failed to copy text: ', err);
-                    // Fallback for older browsers
-    function copyUrlToClipboard(button) {
-        const urlInput = button.previousElementSibling;
-        urlInput.select();
-        navigator.clipboard.writeText(urlInput.value).then(() => {
-            const originalText = button.textContent;
-            button.textContent = 'Copied!';
-            setTimeout(() => {
-                button.textContent = originalText;
-            }, 2000);
-        });
-    }
 
-                    const textarea = document.createElement('textarea');
-                    textarea.value = textToCopy;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    const originalText = this.textContent;
-                    this.textContent = 'Copied!';
-                    setTimeout(() => {
-                        this.textContent = originalText;
-                    }, 2000);
+        // Handle form submission
+        utmForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            fetch('/build-utm', {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const utmError = document.getElementById('utm-error');
+                if (data.error) {
+                    utmError.textContent = data.error;
+                    utmError.style.display = 'block';
+                    document.getElementById('utm-result').style.display = 'none';
+                } else {
+                    utmError.style.display = 'none';
+                    const utmUrlInput = document.getElementById('utm-url-input');
+                    utmUrlInput.value = data.url;
+                    document.getElementById('utm-result').style.display = 'block';
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('utm-error').textContent = 'An error occurred while generating the URL.';
+                document.getElementById('utm-error').style.display = 'block';
             });
         });
     }
 
-    // Initialize copy buttons on page load
-    initializeCopyButtons();
+    // Property Name Generator Form Handler
+    const propertyForm = document.getElementById('property-form');
+    if (propertyForm) {
+        propertyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            fetch('/generate-property-name', {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const propertyError = document.getElementById('property-error');
+                if (data.error) {
+                    propertyError.textContent = data.error;
+                    propertyError.style.display = 'block';
+                    document.getElementById('property-result').style.display = 'none';
+                } else {
+                    propertyError.style.display = 'none';
+                    const namesList = document.getElementById('property-names-list');
+                    namesList.innerHTML = data.property_names.map(name => 
+                        `<div class="d-flex align-items-center mb-2">
+                            <input type="text" class="form-control me-2" value="${name}" readonly>
+                            <button class="btn btn-outline-primary" onclick="copyText(this)">Copy</button>
+                         </div>`
+                    ).join('');
+                    document.getElementById('property-result').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('property-error').textContent = 'An error occurred while generating the property name.';
+                document.getElementById('property-error').style.display = 'block';
+            });
+        });
+    }
 });
+
+// Copy functions
+function copyUrl() {
+    const urlInput = document.getElementById('utm-url-input');
+    navigator.clipboard.writeText(urlInput.value).then(() => {
+        const button = urlInput.nextElementSibling;
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        setTimeout(() => {
+            button.textContent = originalText;
+        }, 2000);
+    });
+}
+
+function copyText(button) {
+    const input = button.previousElementSibling;
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => {
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        setTimeout(() => {
+            button.textContent = originalText;
+        }, 2000);
+    });
+}

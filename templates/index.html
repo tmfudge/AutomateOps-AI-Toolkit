@@ -125,7 +125,10 @@
                 <div id="utm-error" class="error-message"></div>
                 
                 <div id="utm-result" class="result-box" style="display: none;">
-                    <div id="utm-url"></div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="utm-url-input" readonly>
+                        <button class="btn btn-outline-primary" type="button" onclick="copyUrl()">Copy</button>
+                    </div>
                 </div>
             </div>
         </div>
