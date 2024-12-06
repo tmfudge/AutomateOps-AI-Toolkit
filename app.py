@@ -138,4 +138,13 @@ def embed_code():
                          medium_options=MEDIUM_OPTIONS,
                          property_types=PROPERTY_TYPES)
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Configure logging
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    
+    # Run the application
+    app.run(
+        host='0.0.0.0',
+        port=5000,
+        debug=False  # Disable debug mode for production
+    )
