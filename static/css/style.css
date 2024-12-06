@@ -1,101 +1,46 @@
-:root {
-    --bg-color: #ffffff;
-    --text-color: #000000;
-    --card-bg: #ffffff;
-    --card-border: #e0e0e0;
-    --btn-color: #000000;
-    --btn-text: #ffffff;
-}
-
-[data-theme="dark"] {
-    --bg-color: #1a1a1a;
-    --text-color: #ffffff;
-    --card-bg: #2d2d2d;
-    --card-border: #404040;
-    --btn-color: #ffffff;
-    --btn-text: #000000;
-}
-
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    background-color: #F5F5F5;
+    color: #333333;
     font-family: 'Roboto', sans-serif;
-    transition: background-color 0.3s, color 0.3s;
 }
 
 .header {
-    background-color: var(--card-bg);
+    background-color: white;
     padding: 2rem 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 2rem;
-    text-align: center;
-}
-
-.header img.logo {
-    max-width: 200px;
-    height: auto;
-    margin-bottom: 1rem;
 }
 
 .header h1 {
-    color: var(--text-color);
+    color: #007BFF;
     margin-bottom: 0.5rem;
 }
 
 .header p {
-    color: var(--text-color);
-    opacity: 0.8;
+    color: #666;
     margin-bottom: 0;
 }
 
 .card {
-    border: 1px solid var(--card-border);
-    background-color: var(--card-bg);
+    border: none;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 2rem;
 }
 
 .card-header {
-    background-color: var(--btn-color);
-    color: var(--btn-text);
+    background-color: #007BFF;
+    color: white;
     font-weight: bold;
 }
 
 .btn-primary {
-    background-color: var(--btn-color);
-    border-color: var(--btn-color);
-    color: var(--btn-text);
+    background-color: #007BFF;
+    border-color: #007BFF;
 }
 
 .btn-primary:hover {
-    opacity: 0.9;
-}
-
-.theme-switch {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 1000;
-}
-
-.footer {
-    text-align: center;
-    padding: 2rem 0;
-    margin-top: 2rem;
-    background-color: var(--card-bg);
-    border-top: 1px solid var(--card-border);
-}
-
-.footer img.logo-small {
-    max-width: 100px;
-    height: auto;
-    margin-bottom: 1rem;
-}
-
-.footer p {
-    color: var(--text-color);
-    opacity: 0.8;
-    margin-bottom: 0;
+    background-color: #0056b3;
+    border-color: #0056b3;
 }
 
 .result-box {

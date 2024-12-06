@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
+from urllib.parse import urlparse, urlencode
 import re
 from datetime import datetime
 
@@ -14,7 +14,7 @@ MEDIUM_OPTIONS = {
     'blog': ['blog'],
     'podcast': ['opscast'],
     'website': ['website'],
-    'partner': ['custom']
+    'partner': ['custom']  # Partner will use a text input field
 }
 
 PROPERTY_TYPES = {
@@ -28,50 +28,46 @@ PROPERTY_TYPES = {
     'WF': 'Workflow'
 }
 
+def validate_url(url):
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except:
+        return False
+
+def validate_date(date_str):
+    try:
+        datetime.strptime(date_str, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
+
 @app.route('/')
 def index():
-    """Render the main page with both tools"""
-    return render_template('index.html',
+    return render_template('index.html', 
                          medium_options=MEDIUM_OPTIONS,
                          property_types=PROPERTY_TYPES)
 
 @app.route('/build-utm', methods=['POST'])
 def build_utm():
-    """Generate a UTM-tagged URL"""
     data = request.form
     
-    # Basic validation
-    if not data.get('base_url'):
-        return jsonify({'error': 'Base URL is required'}), 400
-        
-    if not data.get('campaign_name'):
-        return jsonify({'error': 'Campaign Name is required'}), 400
-        
-    if not data.get('medium'):
-        return jsonify({'error': 'Medium is required'}), 400
-        
-    if not data.get('source'):
-        return jsonify({'error': 'Source is required'}), 400
+    # Validate inputs
+    if not validate_url(data['base_url']):
+        return jsonify({'error': 'Invalid URL format'}), 400
     
-    # Parse the base URL
-    parsed_url = urlparse(data['base_url'])
-    base_url = urlunparse((
-        parsed_url.scheme,
-        parsed_url.netloc,
-        parsed_url.path,
-        parsed_url.params,
-        '',  # Clear existing query parameters
-        ''   # Clear fragments
-    ))
-    
+    if not all([data['campaign_name'], data['medium'], data['source']]):
+        return jsonify({'error': 'All fields are required'}), 400
+
     # Build UTM parameters
     utm_params = {
-        'utm_source': data.get('source_custom') if data.get('source') == 'other' else data.get('source'),
+        'utm_campaign': data['campaign_name'],
         'utm_medium': data['medium'],
-        'utm_campaign': data['campaign_name'].lower().replace(' ', '-')
+        'utm_source': data['source']
     }
     
-    # Generate the final URL
+    # Construct final URL
+    base_url = data['base_url'].rstrip('/')
     utm_string = urlencode(utm_params)
     final_url = f"{base_url}?{utm_string}"
     
@@ -79,20 +75,17 @@ def build_utm():
 
 @app.route('/generate-property-name', methods=['POST'])
 def generate_property_name():
-    """Generate standardized property names"""
     data = request.form
     
-    # Basic validation
-    if not data.get('event_date'):
-        return jsonify({'error': 'Event Date is required'}), 400
-        
-    if not data.get('description'):
-        return jsonify({'error': 'Description is required'}), 400
-    
-    # Get selected property types
+    # Get the list of selected property types
     property_types = request.form.getlist('property_types[]')
+    
+    # Validate inputs
     if not property_types:
-        return jsonify({'error': 'At least one Property Type must be selected'}), 400
+        return jsonify({'error': 'At least one property type must be selected'}), 400
+        
+    if not all([data['description']]):
+        return jsonify({'error': 'Description is required'}), 400
     
     # Get and format the event date
     event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').strftime('%Y%m%d')
@@ -122,42 +115,5 @@ def generate_property_name():
     
     return jsonify({'property_names': property_names})
 
-@app.route('/admin/embed')
-def admin_embed():
-    """Admin-only page for embed codes"""
-    return render_template('admin/embed.html',
-                         base_url=request.url_root)
-
-@app.route('/embed-code')
-def embed_code():
-    """Generate a standalone HTML version of the tools"""
-    # Get the CSS content
-    with open('static/css/style.css', 'r') as f:
-        css_content = f.read()
-    
-    # Get the JavaScript content
-    with open('static/js/main.js', 'r') as f:
-        js_content = f.read()
-    
-    return render_template('embed.html',
-                         css_content=css_content,
-                         js_content=js_content,
-                         medium_options=MEDIUM_OPTIONS,
-                         property_types=PROPERTY_TYPES)
-
-@app.route('/')
-def index():
-    """Serve the standalone HTML"""
-    return render_template('standalone.html')
-
 if __name__ == '__main__':
-    # Configure logging
-    import logging
-    logging.basicConfig(level=logging.INFO)
-    
-    # Run the application
-    app.run(
-        host='0.0.0.0',
-        port=5000,
-        debug=True  # Enable debug mode for development
-    )
+    app.run(host='0.0.0.0', port=5000, debug=True)
