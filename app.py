@@ -1,9 +1,26 @@
 from flask import Flask, render_template, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
 import re
 from datetime import datetime
+import os
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class URLHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    base_url = db.Column(db.String(500), nullable=False)
+    campaign_name = db.Column(db.String(100), nullable=False)
+    medium = db.Column(db.String(50), nullable=False)
+    source = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    final_url = db.Column(db.String(1000), nullable=False)
+
+with app.app_context():
+    db.create_all()
 
 # Configuration for dropdown options
 MEDIUM_OPTIONS = {
@@ -71,7 +88,16 @@ def build_utm():
     utm_string = urlencode(utm_params)
     final_url = f"{base_url}?{utm_string}"
     
-    
+    # Save to history
+    url_history = URLHistory(
+        base_url=base_url,
+        campaign_name=data['campaign_name'],
+        medium=data['medium'],
+        source=data['source'],
+        final_url=final_url
+    )
+    db.session.add(url_history)
+    db.session.commit()
     
     return jsonify({'url': final_url})
 
@@ -91,6 +117,19 @@ def generate_property_name():
     
     # Get and format the event date
     event_date = datetime.strptime(data['event_date'], '%Y-%m-%d').strftime('%Y%m%d')
+@app.route('/url-history')
+def url_history():
+    history = URLHistory.query.order_by(URLHistory.created_at.desc()).limit(10).all()
+    history_list = [{
+        'base_url': h.base_url,
+        'campaign_name': h.campaign_name,
+        'medium': h.medium,
+        'source': h.source,
+        'created_at': h.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'final_url': h.final_url
+    } for h in history]
+    return jsonify({'history': history_list})
+
     
     # Format description (replace spaces with hyphens)
     description = '-'.join(data['description'].split())
