@@ -1,9 +1,35 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect
+from flask_sqlalchemy import SQLAlchemy
 from urllib.parse import urlparse, urlencode
 import re
+import os
+import string
+import random
 from datetime import datetime
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class ShortenedURL(db.Model):
+    __tablename__ = 'shortened_urls'
+    id = db.Column(db.Integer, primary_key=True)
+    original_url = db.Column(db.Text, nullable=False)
+    short_code = db.Column(db.String(10), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    clicks = db.Column(db.Integer, default=0)
+
+    def __repr__(self):
+        return f'<ShortenedURL {self.short_code}>'
+
+def generate_short_code(length=6):
+    """Generate a random short code for URLs"""
+    characters = string.ascii_letters + string.digits
+    while True:
+        code = ''.join(random.choice(characters) for _ in range(length))
+        if not ShortenedURL.query.filter_by(short_code=code).first():
+            return code
 
 # Configuration for dropdown options
 MEDIUM_OPTIONS = {
@@ -114,6 +140,46 @@ def generate_property_name():
         property_names.append(' | '.join(parts))
     
     return jsonify({'property_names': property_names})
+
+@app.route('/shorten', methods=['POST'])
+def shorten_url():
+    url = request.form.get('url')
+    if not url:
+        return jsonify({'error': 'URL is required'}), 400
+    
+    if not validate_url(url):
+        return jsonify({'error': 'Invalid URL format'}), 400
+
+    existing = ShortenedURL.query.filter_by(original_url=url).first()
+    if existing:
+        return jsonify({
+            'short_url': request.host_url + existing.short_code,
+            'short_code': existing.short_code
+        })
+
+    short_code = generate_short_code()
+    new_url = ShortenedURL(
+        original_url=url,
+        short_code=short_code
+    )
+    
+    db.session.add(new_url)
+    db.session.commit()
+    
+    return jsonify({
+        'short_url': request.host_url + short_code,
+        'short_code': short_code
+    })
+
+@app.route('/<short_code>')
+def redirect_to_url(short_code):
+    url_mapping = ShortenedURL.query.filter_by(short_code=short_code).first_or_404()
+    url_mapping.clicks += 1
+    db.session.commit()
+    return redirect(url_mapping.original_url)
+
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

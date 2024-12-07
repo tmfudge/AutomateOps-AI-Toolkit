@@ -153,4 +153,28 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+    
+    // URL Shortener Form Submission
+    document.getElementById('shortener-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('/shorten', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('shortener-error').textContent = data.error;
+                document.getElementById('shortener-error').style.display = 'block';
+                document.getElementById('shortener-result').style.display = 'none';
+            } else {
+                document.getElementById('short-url').textContent = data.short_url;
+                document.getElementById('shortener-result').style.display = 'block';
+                document.getElementById('shortener-error').style.display = 'none';
+            }
+        });
+    });
 });
