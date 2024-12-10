@@ -1,6 +1,6 @@
-# AutomateOps.ai Campaign Management Tool
+# AutomateOps AI Toolkit
 
-A web application for streamlining campaign management tasks with UTM URL building and property name generation capabilities.
+A campaign management toolkit providing tools for digital marketing campaign setup and tracking, with core UTM parameter management and property name generation capabilities. The application includes both a Flask-based web application and standalone HTML versions for flexibility in deployment.
 
 ## Features
 
